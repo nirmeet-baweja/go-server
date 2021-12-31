@@ -56,6 +56,20 @@ func createNewArticle(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%+v", string(reqBody))
 }
 
+func deleteArticle(w http.ResponseWriter, r *http.Request) {
+	// parse the path parameters
+	vars := mux.Vars(r)
+	// extract the id of the article to be deleted
+	id := vars["id"]
+
+	for index, article := range Articles {
+		if article.Id == id {
+			// update Articles slice to remove the article
+			Articles = append(Articles[:index], Articles[index+1:]...)
+		}
+	}
+}
+
 // handling requests using the third party router - gorilla/mux
 func handleRequests() {
 	// create  a new instance of mux router
@@ -67,7 +81,9 @@ func handleRequests() {
 	router.HandleFunc("/articles", returnAllArticles).Methods("GET")
 	router.HandleFunc("/articles", createNewArticle).Methods("POST")
 	// add route to get a specific article based on article's ID
-	router.HandleFunc("/articles/{id}", returnSingleArticle)
+	router.HandleFunc("/articles/{id}", returnSingleArticle).Methods("GET")
+	// add route to delete a specific article based on article's ID
+	router.HandleFunc("/articles/{id}", deleteArticle).Methods("DELETE")
 	// pass the router as a second argument to the http.ListenAndServe function
 	log.Fatal((http.ListenAndServe(":3000", router)))
 }
